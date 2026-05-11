@@ -148,7 +148,7 @@ class Clusters(AbstractImageMethod):
         
     ):
         
-        # kmeans
+        # kmeans 
         # --------------------------------------------------
         if algorithm == 'kmeans' and (covariance_type or ensamMethod or bandwidth or kernel or metric):
             raise ValueError(
