@@ -134,19 +134,204 @@ class Clusters(AbstractImageMethod):
         normalize=None,
         verbose = None,
         algorithm = default_algorithm,
-        n_clusters = default_n_clusters,
-        random_seed=default_random_seed,
-        n_init = default_n_init,
-        max_iter = default_max_iter,
-        algorithmMethod = default_algorithmMethod,
-        covariance_type = default_covariance_type,
-        ensamMethod = default_ensamMethod,
-        bandwidth = default_bandwidth,
-        kernel = default_kernel,
-        metric=default_metric,
-        RBFKmeans=default_RBFKmeans
+        n_clusters = None,
+        random_seed=None,
+        n_init = None,
+        max_iter = None,
+        algorithmMethod = None,
+        covariance_type = None,
+        ensamMethod = None,
+        bandwidth = None,
+        kernel = None,
+        metric = None,
+        RBFKmeans = None
         
     ):
+        
+        # kmeans
+        # --------------------------------------------------
+        if algorithm == 'kmeans' and (covariance_type or ensamMethod or bandwidth or kernel or metric):
+            raise ValueError(
+                f"Incorrect hyperparameters for the algorithm: '{algorithm}'. "
+                f"The accepted hyperparameters for this algorithm are: n_clusters, random_seed, n_init, max_iter, algorithmMethod and RBFKmeans."
+            )
+        else:
+            if algorithm == 'kmeans':
+                if n_clusters is None:
+                    n_clusters = self.default_n_clusters
+                if random_seed is None:
+                    random_seed = self.default_random_seed
+                if n_init is None:
+                    n_init = self.default_n_init
+                if max_iter is None:
+                    max_iter = self.default_max_iter
+                if algorithmMethod is None:
+                    algorithmMethod = self.default_algorithmMethod
+                if RBFKmeans is None:
+                    RBFKmeans = self.default_RBFKmeans
+        # --------------------------------------------------
+        
+        # gaussianMix
+        # --------------------------------------------------
+        if algorithm == 'gaussianMix' and (algorithmMethod or ensamMethod or bandwidth or kernel or metric or RBFKmeans):
+            raise ValueError(
+                f"Incorrect hyperparameters for the algorithm: '{algorithm}'. "
+                f"The accepted hyperparameters for this algorithm are: n_clusters, random_seed, n_init, max_iter and covariance_type."
+            )
+        else:
+            if algorithm == 'gaussianMix':
+                if n_clusters is None:
+                    n_clusters = self.default_n_clusters
+                if random_seed is None:
+                    random_seed = self.default_random_seed
+                if n_init is None:
+                    n_init = self.default_n_init
+                if max_iter is None:
+                    max_iter = self.default_max_iter
+                if covariance_type is None:
+                    covariance_type = self.default_covariance_type
+        # --------------------------------------------------
+        
+        # aggloKNN
+        # --------------------------------------------------
+        if algorithm == 'aggloKNN' and (covariance_type or ensamMethod or bandwidth or kernel or random_seed or n_init or max_iter or algorithmMethod or RBFKmeans):
+            raise ValueError(
+                f"Incorrect hyperparameters for the algorithm: '{algorithm}'. "
+                f"The accepted hyperparameters for this algorithm are: n_clusters and metric."
+            )
+        else:
+            if algorithm == 'aggloKNN':
+                if n_clusters is None:
+                    n_clusters = self.default_n_clusters
+                if metric is None:
+                    metric = self.default_metric
+        # --------------------------------------------------
+        
+        # kde
+        # --------------------------------------------------
+        if algorithm == 'kde' and (n_clusters or covariance_type or ensamMethod or random_seed or n_init or max_iter or algorithmMethod or RBFKmeans):
+            raise ValueError(
+                f"Incorrect hyperparameters for the algorithm: '{algorithm}'. "
+                f"The accepted hyperparameters for this algorithm are: metric, kernel and bandwidth."
+            )
+        else:
+            if algorithm == 'kde':
+                if kernel is None:
+                    kernel = self.default_kernel
+                if bandwidth is None:
+                    bandwidth = self.default_bandwidth
+                if metric is None:
+                    metric = self.default_metric
+        # --------------------------------------------------
+        
+        # kmedoids
+        # --------------------------------------------------
+        if algorithm == 'kmedoids' and (covariance_type or ensamMethod or n_init or algorithmMethod or RBFKmeans or kernel or bandwidth):
+            raise ValueError(
+                f"Incorrect hyperparameters for the algorithm: '{algorithm}'. "
+                f"The accepted hyperparameters for this algorithm are: metric, n_clusters, max_iter and random_seed."
+            )
+        else:
+            if algorithm == 'kmedoids':
+                if n_clusters is None:
+                    n_clusters = self.default_n_clusters
+                if max_iter is None:
+                    max_iter = self.default_max_iter
+                if random_seed is None:
+                    random_seed = self.default_random_seed
+                if metric is None:
+                    metric = self.default_metric
+        # --------------------------------------------------
+        
+        # factor
+        # --------------------------------------------------
+        if algorithm == 'factor' and (metric or max_iter or covariance_type or ensamMethod or n_init or algorithmMethod or RBFKmeans or kernel or bandwidth):
+            raise ValueError(
+                f"Incorrect hyperparameters for the algorithm: '{algorithm}'. "
+                f"The accepted hyperparameters for this algorithm are: n_clusters and random_seed."
+            )
+        else:
+            if algorithm == 'factor':
+                if n_clusters is None:
+                    n_clusters = self.default_n_clusters
+                if random_seed is None:
+                    random_seed = self.default_random_seed                
+        # --------------------------------------------------
+        
+        # mixMethod
+        # --------------------------------------------------
+        if algorithm == 'mixMethod':
+            if ensamMethod is None:
+                ensamMethod = self.default_ensamMethod
+            hiperAll={'n_clusters','random_seed','n_init','max_iter','algorithmMethod','RBFKmeans','covariance_type','metric','ensamMethod','bandwidth','kernel'}
+            hiperOK=set()
+            if 'kmeans' in ensamMethod:
+                hiperOK.update(['n_clusters','random_seed','n_init','max_iter','algorithmMethod','RBFKmeans'])
+            if 'gaussianMix' in ensamMethod:
+                hiperOK.update(['n_clusters','random_seed','n_init','max_iter','covariance_type'])
+            if 'aggloKNN' in ensamMethod:
+                hiperOK.update(['n_clusters','metric'])
+            if 'kmedoids' in ensamMethod:
+                hiperOK.update(['n_clusters','metric','random_seed','max_iter'])
+            if 'factor' in ensamMethod:
+                hiperOK.update(['n_clusters','random_seed'])
+            hiperOK.update(['ensamMethod'])
+            hiperKO=hiperAll-hiperOK
+        
+        vari = locals().copy()
+        vari.pop('self', None)
+    
+        if algorithm == 'mixMethod' and (any(vari[name] is not None for name in hiperKO)):
+            raise ValueError(
+                f"Incorrect hyperparameters for the algorithm: '{algorithm}'. "
+                f"The accepted hyperparameters for this algorithm are: {hiperOK}."
+            )
+        else:
+            if algorithm == 'mixMethod':
+                if 'kmeans' in ensamMethod:
+                    if n_clusters is None:
+                        n_clusters = self.default_n_clusters
+                    if random_seed is None:
+                        random_seed = self.default_random_seed
+                    if n_init is None:
+                        n_init = self.default_n_init
+                    if max_iter is None:
+                        max_iter = self.default_max_iter
+                    if algorithmMethod is None:
+                        algorithmMethod = self.default_algorithmMethod
+                    if RBFKmeans is None:
+                        RBFKmeans = self.default_RBFKmeans
+                if 'gaussianMix' in ensamMethod:
+                    if n_clusters is None:
+                        n_clusters = self.default_n_clusters
+                    if random_seed is None:
+                        random_seed = self.default_random_seed
+                    if n_init is None:
+                        n_init = self.default_n_init
+                    if max_iter is None:
+                        max_iter = self.default_max_iter
+                    if covariance_type is None:
+                        covariance_type = self.default_covariance_type
+                if 'aggloKNN' in ensamMethod:
+                    if n_clusters is None:
+                        n_clusters = self.default_n_clusters
+                    if metric is None:
+                        metric = self.default_metric
+                if 'kmedoids' in ensamMethod:
+                    if n_clusters is None:
+                        n_clusters = self.default_n_clusters
+                    if max_iter is None:
+                        max_iter = self.default_max_iter
+                    if random_seed is None:
+                        random_seed = self.default_random_seed
+                    if metric is None:
+                        metric = self.default_metric
+                if 'factor' in ensamMethod:
+                    if n_clusters is None:
+                        n_clusters = self.default_n_clusters
+                    if random_seed is None:
+                        random_seed = self.default_random_seed                    
+        # --------------------------------------------------
         
         if algorithm=="aggloKNN":
             self.METRICS_TYPES = {'euclidean', 'manhattan', 'cosine'}
@@ -160,19 +345,31 @@ class Clusters(AbstractImageMethod):
                 f"Allowed values are: {self.ALGORITHMS}"
             )
         
-        if covariance_type not in self.COV_TYPES:
+        if algorithm == 'gaussianMix' and covariance_type not in self.COV_TYPES:
             raise ValueError(
                 f"Invalid covariance_type '{covariance_type}'. "
                 f"Allowed values are: {self.COV_TYPES}"
             )
         
-        if kernel not in self.KERNEL_TYPES:
+        if algorithm == 'mixMethod' and 'gaussianMix' in ensamMethod and covariance_type not in self.COV_TYPES:
+            raise ValueError(
+                f"Invalid covariance_type '{covariance_type}'. "
+                f"Allowed values are: {self.COV_TYPES}"
+            )
+        
+        if algorithm == 'kde' and kernel not in self.KERNEL_TYPES:
             raise ValueError(
                 f"Invalid kernel '{kernel}'. "
                 f"Allowed values are: {self.KERNEL_TYPES}"
             )
         
-        if metric not in self.METRICS_TYPES:
+        if algorithm in ['kde', 'aggloKNN', 'kmedoids'] and metric not in self.METRICS_TYPES:
+            raise ValueError(
+                f"Invalid metric '{metric}'. "
+                f"Allowed values are: {self.METRICS_TYPES}"
+            )
+        
+        if algorithm == 'mixMethod' and any(method in ensamMethod for method in ['aggloKNN', 'kmedoids']) and metric not in self.METRICS_TYPES:
             raise ValueError(
                 f"Invalid metric '{metric}'. "
                 f"Allowed values are: {self.METRICS_TYPES}"
@@ -195,7 +392,7 @@ class Clusters(AbstractImageMethod):
                 "Algorithms cannot be repeated."
             )
             
-        if (algorithm=="kde" or algorithm=="aggloKNN") and (n_clusters=="auto" or isinstance(n_clusters, list)):
+        if algorithm in ["kde","aggloKNN"] and (n_clusters=="auto" or isinstance(n_clusters, list)):
             raise ValueError(
                 "For these algorithms ('kde', 'aggloKNN'), the 'auto' option to automatically select the optimal number of clusters is not enabled."
             )
@@ -321,7 +518,7 @@ class Clusters(AbstractImageMethod):
                 listDist=listDist[(listDist[:,0]!=ind) & (listDist[:,1]!=ind)]
                 ind=newInd
     
-    # pip install pyclustering
+    # YA NO SE USA: pip install pyclustering
     def __kmedoids_pam(self,X, K, max_iter=100, random_state=0):
         
         """
