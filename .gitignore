@@ -1,12 +1,14 @@
-**/__pycache__
-=======
-#Misc
+# Misc
+.DS_Store
 HyNNImages/
+SyntheticImages/
 logs/
 data/
 scripts_logs/
+objs.pkl
 
 # Byte-compiled / optimized / DLL files
+**/__pycache__/
 __pycache__/
 *.py[cod]
 *$py.class
