@@ -616,8 +616,7 @@ class IGTD(MappingMethod):
         Return
         ------
         image_data:
-            the generated data, a 3D numpy array. The third dimension is across samples. The range of values
-            is [0, 255]. Small values actually indicate high values in the original data.
+            the generated data, a 3D numpy array. The third dimension is across samples. 
         samples:
             the names of indices of the samples.
         '''
@@ -628,26 +627,16 @@ class IGTD(MappingMethod):
         else:
             samples = [str(i) for i in range(data.shape[0])]
 
-        data_2 = data.copy()
-        data_2 = data_2[:, index]
-        max_v = np.max(data_2)
-        min_v = np.min(data_2)
-        data_2 = 255 - (data_2 - min_v) / (max_v - min_v) * 255  # So that black means high value
+        data_arranged = data.copy()
+        data_arranged = data_arranged[:, index]
 
-        image_data = np.empty((num_row, num_column, data_2.shape[0]))
-        image_data.fill(np.nan)
+        image_data = np.zeros((num_row, num_column, data_arranged.shape[0]))
 
 
-        for i in range(data_2.shape[0]):
-            data_i = np.empty((num_row, num_column))
-            data_i.fill(np.nan)
-            data_i[coord] = data_2[i, :]
-
-            iid = np.where(np.isnan(data_i))
-            data_i[iid] = 255
-
+        for i in range(data_arranged.shape[0]):
+            data_i = np.zeros((num_row, num_column))
+            data_i[coord] = data_arranged[i, :]
             image_data[:, :, i] = data_i
-            image_data[:, :, i] = 255 - image_data[:, :, i]
 
             target = None if labels is None else labels[i]
             self._save_image(data_i,target,i)
